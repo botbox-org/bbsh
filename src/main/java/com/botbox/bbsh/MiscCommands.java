@@ -409,4 +409,61 @@ public class MiscCommands {
 
     }
 
+    @CLICommand(name="cat", topic="files", description = "cat a file")
+    public static class CatCommand implements Command {
+        private File scriptFile;
+        @Argument(usage = "file", required=true)
+        private void setScriptFile(File f) throws CmdLineException {
+            if (!f.exists()) {
+                throw new IllegalArgumentException("the file '" + f.getAbsolutePath() + "' does not exist");
+            }
+            if (!f.canRead() || !f.isFile()) {
+                throw new IllegalArgumentException("can not read the file '" + f.getAbsolutePath() + "'");
+            }
+            this.scriptFile = f;
+        }
+        @Override
+        public int executeCommand(CommandContext context) throws CLIException {
+            try {
+                BufferedReader input = new BufferedReader(new FileReader(scriptFile));
+                try {
+                    String line;
+                    while ((line = input.readLine()) != null) {
+                        context.out.println(line);
+                    }
+                } finally {
+                    input.close();
+                }
+                return 0;
+            } catch (IOException e) {
+                e.printStackTrace(context.err);
+                return 1;
+            }
+        }
+    }
+
+    @CLICommand(name="ls", topic="files", description = "list files in a folder")
+    public static class LsCommand implements Command {
+        private File path;
+        @Argument(usage = "path", required=true)
+        private void setFile(File f) throws CmdLineException {
+            if (!f.exists()) {
+                throw new IllegalArgumentException("the path '" + f.getAbsolutePath() + "' does not exist");
+            }
+            this.path = f;
+        }
+        @Override
+        public int executeCommand(CommandContext context) throws CLIException {
+            try {
+                File[] files = path.listFiles();
+                    for (File file : files) {
+                        context.out.println(file.isDirectory() ? "d " + file.getPath(): "  " + file.getName());
+                    }
+                return 0;
+            } catch (Exception e) {
+                e.printStackTrace(context.err);
+                return 1;
+            }
+        }
+    }
 }
