@@ -1,8 +1,12 @@
+
 apply plugin: 'java'
 apply plugin: 'application'
 apply plugin: 'idea'
+apply plugin: 'maven-publish'
+apply plugin: 'signing'
 
-version = '0.5'
+version = '0.1'
+group = 'com.botbox'
 
 repositories {
     maven { // The google mirror is less flaky than mavenCentral()
@@ -10,6 +14,13 @@ repositories {
     }
     mavenCentral()
     mavenLocal()
+}
+
+
+
+java {
+    withJavadocJar()
+    withSourcesJar()
 }
 
 // Feel free to delete the comment at the next line. It is just for safely
@@ -23,6 +34,63 @@ dependencies {
     compileOnly "javax.annotation:javax.annotation-api:1.2"
 }
 
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            artifactId = 'bbsh'
+            from components.java
+            versionMapping {
+                usage('java-api') {
+                    fromResolutionOf('runtimeClasspath')
+                }
+                usage('java-runtime') {
+                    fromResolutionResult()
+                }
+            }
+            pom {
+                name = 'bbsh'
+                description = 'A shell for Java applications'
+                url = 'https://github.com/botbox-org/bbsh'
+                properties = [
+                    myProp: "value",
+                   "prop.with.dots": "anotherValue"
+                ]
+                licenses {
+                    license {
+                        name = 'BSD License'
+                    }
+                }
+                developers {
+                    developer {
+                        id = 'joakimeriksson'
+                        name = 'Joakim Eriksson'
+                        email = 'joakim.eriksson@botbox.com'
+                    }
+                }
+                scm {
+                    connection = 'scm:git:git://github.com:botbox-org/bbsh.git'
+                    developerConnection = 'scm:git:git://github.com:botbox-org/bbsh.git'
+                    url = 'https://github.com/botbox-org/bbsh'
+                }
+            }
+        }
+    }
+
+    repositories {
+      maven {
+        name = "OSSRH"
+        url = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+        credentials {
+            username "$mavenUser"
+            password "$mavenPassword"
+        }
+      }
+    }
+}
+
+signing {
+    sign publishing.publications.mavenJava
+}
 
 mainClassName = 'com.botbox.bbsh.Main'
 
