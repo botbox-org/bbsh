@@ -5,7 +5,7 @@ apply plugin: 'idea'
 apply plugin: 'maven-publish'
 apply plugin: 'signing'
 
-version = '0.1'
+version = '0.1.1'
 group = 'com.botbox'
 
 repositories {
@@ -31,7 +31,13 @@ dependencies {
     compile group: 'ch.qos.logback', name: 'logback-core', version: '1.2.3'
     testCompile group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.3'
     compile group: 'org.jline', name: 'jline', version: '3.14.1'
+    compile group: 'org.jline', name: 'jline-builtins', version: '3.14.1'
     compileOnly "javax.annotation:javax.annotation-api:1.2"
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
 }
 
 publishing {
