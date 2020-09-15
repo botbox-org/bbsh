@@ -27,6 +27,7 @@
  */
 
 package com.botbox.bbsh;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -108,12 +109,14 @@ public abstract class CLIContext {
         return executeCommand(commandLine, null);
     }
 
+    protected abstract String readLine() throws IOException;
+
     @SuppressWarnings("resource")
     public int executeCommand(String commandLine, CommandContext context) {
         String[][] parts;
         PrintStream out = context == null ? this.out : context.out;
         PrintStream err = context == null ? this.err : context.err;
-
+        CommandContext inputContext = null;
         try {
             parts = CommandParser.parseCommandLine(commandLine);
         } catch (Exception e) {
@@ -150,6 +153,11 @@ public abstract class CLIContext {
                 }
                 // TODO: Check if first command is also LineListener and set it
                 // up for input!!
+                if (commands[0].getCommand() instanceof LineListener) {
+                    // Try printing this...
+                    out.println("Expecting data from terminal.");
+                    inputContext = commands[0];
+                }
             }
             // Execute when all is set-up in opposite order...
             int index = commands.length - 1;
@@ -190,8 +198,23 @@ public abstract class CLIContext {
                 if (exited) {
                     exitCommands(commands);
                 } else {
-                    synchronized (currentAsyncCommands) {
-                        currentAsyncCommands.add(commands);
+                    /* If the first command is a line listener - keep reading... */
+                    if (inputContext != null) {
+                        try {
+                            LineListener inputListener = (LineListener) inputContext.getCommand();
+                            String line = "";
+                            do {
+                                line = readLine();
+                                /* Send in the line - we should have a way to signal "stop" also - return value? */
+                                inputListener.lineRead(line);
+                            } while (line.length() > 0 && !inputContext.hasExited());
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    } else {
+                        synchronized (currentAsyncCommands) {
+                            currentAsyncCommands.add(commands);
+                        }
                     }
                 }
             }

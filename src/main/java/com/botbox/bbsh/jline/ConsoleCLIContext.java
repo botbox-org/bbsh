@@ -111,6 +111,11 @@ public class ConsoleCLIContext extends CLIContext {
 
     }
 
+    @Override
+    protected String readLine() throws IOException {
+        return console.readLine();
+    }
+
     private static class ConsoleOutputStream extends OutputStream {
 
         private StringBuilder line = new StringBuilder();

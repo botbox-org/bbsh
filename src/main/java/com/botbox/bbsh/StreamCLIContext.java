@@ -55,6 +55,11 @@ public class StreamCLIContext extends CLIContext {
     }
 
     @Override
+    protected String readLine() throws IOException {
+        return inReader.readLine();
+    }
+
+    @Override
     public void start() {
         if (!isRunning) {
             isRunning = true;
